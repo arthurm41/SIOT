@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 0.6, "left": -0.6, "attrs": {} },
+    {
+      "type": "wokwi-rgb-led",
+      "id": "rgb1",
+      "top": -111.2,
+      "left": 154.7,
+      "attrs": { "common": "cathode" }
+    }
+  ],
+  "connections": [
+    [ "uno:GND.1", "rgb1:COM", "black", [ "h57.9", "v-66.8" ] ],
+    [ "uno:9", "rgb1:R", "red", [ "h0.8", "v-76.8" ] ],
+    [ "uno:10", "rgb1:G", "green", [ "h29.5", "v-76.8" ] ],
+    [ "uno:11", "rgb1:B", "blue", [ "v-9.6", "h48.6", "v-67.2" ] ]
+  ],
+  "dependencies": {}
+}
