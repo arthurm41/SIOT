@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monitor de Temperatura - DHT11</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #0078d4, #00c853);
+      color: white;
+      margin: 0;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #dados {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 20px 40px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .valor {
+      font-size: 3em;
+      font-weight: bold;
+    }
+
+    #status {
+      margin-top: 15px;
+      font-size: 1em;
+      opacity: 0.8;
+    }
+
+    button {
+      background-color: #fff;
+      color: #0078d4;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1em;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #00c853;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌡️ Monitor de Temperatura - DHT11</h1>
+  <div id="dados">
+    <p>Temperatura:</p>
+    <div class="valor" id="temp">-- °C</div>
+    <p>Umidade:</p>
+    <div class="valor" id="umid">-- %</div>
+    <p id="status">Desconectado</p>
+  </div>
+  <button id="conectar">Conectar ao Arduino</button>
+
+  <script>
+    const btnConectar = document.getElementById('conectar');
+    const temp = document.getElementById('temp');
+    const umid = document.getElementById('umid');
+    const status = document.getElementById('status');
+
+    let port;
+    let reader;
+
+    async function conectarSerial() {
+      try {
+        port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 9600 });
+        status.textContent = "Conectado ✅";
+        lerDados();
+      } catch (err) {
+        status.textContent = "Erro ao conectar: " + err;
+      }
+    }
+
+    async function lerDados() {
+      const decoder = new TextDecoderStream();
+      const inputDone = port.readable.pipeTo(decoder.writable);
+      const inputStream = decoder.readable;
+
+      reader = inputStream.getReader();
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        if (value) processarDados(value.trim());
+      }
+    }
+
+    function processarDados(dados) {
+      // Espera que o Arduino envie algo como: "Temperatura: 27.00°C  Umidade: 45.00%"
+      if (dados.includes("Temperatura") && dados.includes("Umidade")) {
+        const partes = dados.match(/Temperatura:\s*([\d.]+).*Umidade:\s*([\d.]+)/);
+        if (partes) {
+          temp.textContent = partes[1] + " °C";
+          umid.textContent = partes[2] + " %";
+        }
+      }
+    }
+
+    btnConectar.addEventListener("click", conectarSerial);
+  </script>
+</body>
+</html>
